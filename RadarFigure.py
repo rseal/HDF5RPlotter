@@ -61,6 +61,7 @@ class PlotImage:
 
    def   __init__(self,file):
 
+
       # flag to initialize data on first run
       self.firstCall = True
 
@@ -71,7 +72,9 @@ class PlotImage:
       self.ax  = self.fig.add_subplot(111);
       self.ipp = file.attrs.get('IPP',0)*1e3;
       self.file = file;
+
       self.keys = file.keys();
+
       self.tIndex = TableIndexer(self.keys);
 
       #access toolbar callbacks and reassign with custom functionality
@@ -104,14 +107,16 @@ class PlotImage:
       toolbar._group.add(self.searchButton)
       toolbar.update()
       self.ds = self.file[self.tIndex.Current()]
-      time = self.ds.attrs.get('TIME','00:00:00')
+      time = self.ds.attrs.get('START_TIME','00:00:00')
       fs = self.file.attrs.get('OUTPUT_RATE',0)
+      winStart = self.file.attrs.get('RxWin_START',0)
+      winStop = self.file.attrs.get('RxWin_STOP',0)
 
       # initialize instances of PowerMap and DopplerMap
       # this will be referenced later when the user chooses
       # the desired plot type
-      self.powerMap = rt.PowerMap(self.ds, file, fs)
-      self.dopplerMap = rt.DopplerMap(self.ds, file, fs)
+      self.powerMap = rt.PowerMap(self.ds, file, fs, winStart, winStop)
+      self.dopplerMap = rt.DopplerMap(self.ds, file, fs, winStart, winStop)
 
       #default to power map computation
       self.map = self.powerMap
@@ -139,7 +144,7 @@ class PlotImage:
       dSet = self.ds
 
       #read table's time attribute
-      time = dSet.attrs.get('TIME','00:00:00')
+      time = dSet.attrs.get('START_TIME','00:00:00')
 
       #trim data samples to remove FIR garbage
       dSet = dSet[:,20:dSet.shape[1]] 
@@ -178,7 +183,7 @@ def Search(self,args):
    value = args.input.value()
 
    for idx in args.keys:
-      time = args.file[idx].attrs.get('TIME','00:00:00')
+      time = args.file[idx].attrs.get('START_TIME','00:00:00')
       if time == value:
          break
 

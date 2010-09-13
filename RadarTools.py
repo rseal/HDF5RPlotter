@@ -1,8 +1,7 @@
 import numpy as np
-import scipy.stsci as sp
 
 class Compute:
-   def __init__(self, data, file, sampleRate, bitScale=15.0):
+   def __init__(self, data, file, sampleRate, winStart, winStop, bitScale=15.0):
       
       self.shape = data.shape
       self.bits = bitScale
@@ -11,10 +10,15 @@ class Compute:
       self.yLabel = 'yAxis'
       self.title = 'title'
       self.origin = 'lower'
+      self.winStart = winStart;
+      self.winStop = winStop;
 
       #compute range
-      dStart =data.attrs.get('DATA_WIN_START', 0)
-      dSize  = data.attrs.get('DATA_WIN_SIZE',0)
+      dStart =winStart
+      dStop = winStop 
+      dSize = dStop - dStart
+
+      #dSize  = data.attrs.get('DATA_WIN_SIZE',0)
       self.h0 = np.round(150e3*dStart/self.sRate);
       self.hf = np.round( self.h0 + 150e3*dSize/self.sRate);
       self.ipp = file.attrs.get('IPP',0)*1e3;
@@ -43,8 +47,8 @@ class Compute:
 
 class PowerMap(Compute):
 
-    def __init__(self, data, sampleRate, bitScale=15.0):
-       Compute.__init__(self, data, sampleRate, bitScale)
+    def __init__(self, data, sampleRate, winStart, winStop, bitScale=15.0):
+       Compute.__init__(self, data, sampleRate, winStart, winStop, bitScale)
        self.xLabel = 'IPP (' + str(self.ipp) + ' ms)' 
        self.yLabel = 'Range (Km)' 
 
@@ -66,8 +70,8 @@ class PowerMap(Compute):
 
 class DopplerMap(Compute):
 
-    def __init__(self, data, sampleRate, bitScale=15.0):
-       Compute.__init__(self, data, sampleRate, bitScale)
+    def __init__(self, data, sampleRate, winStart, winStop, bitScale=15.0):
+       Compute.__init__(self, data, sampleRate, winStart, winStop, bitScale)
        self.xLabel = 'Range (Km)'
        self.yLabel = 'Velocity (m/s)' 
        self.origin = 'upper'
